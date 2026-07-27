@@ -7,6 +7,7 @@ import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HydrationRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RespiratoryRateRecord
@@ -52,6 +53,8 @@ object HealthMetricMapper {
 
             is ExerciseSessionRecord ->
                 listOf(mapExerciseSession(record))
+
+            is NutritionRecord -> mapNutrition(record)
 
             else -> emptyList()
         }
@@ -279,6 +282,81 @@ object HealthMetricMapper {
                 "notes" to record.notes,
             ),
         )
+    }
+
+    private fun mapNutrition(
+        record: NutritionRecord,
+    ): List<HealthMetricPayload> {
+        val metrics = mutableListOf<HealthMetricPayload>()
+
+        fun addMetric(
+            type: String,
+            value: Double?,
+            unit: String,
+        ) {
+            if (value == null) {
+                return
+            }
+
+            metrics += createPayload(
+                record = record,
+                type = type,
+                value = value,
+                unit = unit,
+                measuredAt = record.endTime,
+                startTime = record.startTime,
+                endTime = record.endTime,
+                discriminator = type,
+                extraData = mapOf(
+                    "meal_type" to record.mealType,
+                    "meal_name" to record.name,
+                ),
+            )
+        }
+
+        addMetric(
+            type = "calories",
+            value = record.energy?.inKilocalories,
+            unit = "kcal",
+        )
+
+        addMetric(
+            type = "protein",
+            value = record.protein?.inGrams,
+            unit = "g",
+        )
+
+        addMetric(
+            type = "fat",
+            value = record.totalFat?.inGrams,
+            unit = "g",
+        )
+
+        addMetric(
+            type = "carbohydrates",
+            value = record.totalCarbohydrate?.inGrams,
+            unit = "g",
+        )
+
+        addMetric(
+            type = "fiber",
+            value = record.dietaryFiber?.inGrams,
+            unit = "g",
+        )
+
+        addMetric(
+            type = "sugar",
+            value = record.sugar?.inGrams,
+            unit = "g",
+        )
+
+        addMetric(
+            type = "sodium",
+            value = record.sodium?.inMilligrams,
+            unit = "mg",
+        )
+
+        return metrics
     }
 
     private fun createPayload(

@@ -11,6 +11,7 @@ import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HydrationRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RespiratoryRateRecord
@@ -44,37 +45,56 @@ class HealthConnectManager(
         HealthConnectClient.getOrCreate(context)
     }
 
-    val permissions: Set<String> = setOf(
-        HealthPermission.getReadPermission(WeightRecord::class),
-        HealthPermission.getReadPermission(StepsRecord::class),
-        HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getReadPermission(SleepSessionRecord::class),
-        HealthPermission.getReadPermission(
-            ActiveCaloriesBurnedRecord::class,
-        ),
-        HealthPermission.getReadPermission(
-            TotalCaloriesBurnedRecord::class,
-        ),
+    /**
+     * Health Connect record permissions currently supported by Health Hub.
+     *
+     * A permission should be added here only when the corresponding record type
+     * is also read, mapped and uploaded by the synchronization pipeline.
+     */
+    private val recordPermissions: Set<String> = setOf(
+        // Activity
+        HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class),
         HealthPermission.getReadPermission(DistanceRecord::class),
-        HealthPermission.getReadPermission(HydrationRecord::class),
-        HealthPermission.getReadPermission(
-            OxygenSaturationRecord::class,
-        ),
-        HealthPermission.getReadPermission(
-            BloodPressureRecord::class,
-        ),
+        HealthPermission.getReadPermission(ExerciseSessionRecord::class),
+        HealthPermission.getReadPermission(StepsRecord::class),
+        HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+
+        // Body measurements
         HealthPermission.getReadPermission(BodyFatRecord::class),
-        HealthPermission.getReadPermission(
-            RespiratoryRateRecord::class,
-        ),
-        HealthPermission.getReadPermission(
-            RestingHeartRateRecord::class,
-        ),
-        HealthPermission.getReadPermission(
-            ExerciseSessionRecord::class,
-        ),
-        HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+        HealthPermission.getReadPermission(WeightRecord::class),
+
+        // Nutrition and hydration
+        HealthPermission.getReadPermission(HydrationRecord::class),
+        HealthPermission.getReadPermission(NutritionRecord::class),
+
+        // Sleep
+        HealthPermission.getReadPermission(SleepSessionRecord::class),
+
+        // Vitals
+        HealthPermission.getReadPermission(BloodPressureRecord::class),
+        HealthPermission.getReadPermission(HeartRateRecord::class),
+        HealthPermission.getReadPermission(OxygenSaturationRecord::class),
+        HealthPermission.getReadPermission(RespiratoryRateRecord::class),
+        HealthPermission.getReadPermission(RestingHeartRateRecord::class),
     )
+
+    /**
+     * Additional Health Connect access capabilities used by the synchronization
+     * process. These permissions are not tied to an individual record type.
+     */
+    private val additionalPermissions: Set<String> = setOf(
+        // Allows WorkManager to read Health Connect while the app is not active.
+        HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+
+        // Allows importing records from other applications that are older than
+        // the default 30-day access window.
+        HealthPermission.PERMISSION_READ_HEALTH_DATA_HISTORY,
+    )
+
+    /**
+     * Complete set requested by the Health Connect permission contract.
+     */
+    val permissions: Set<String> = recordPermissions + additionalPermissions
 
     suspend fun hasAllPermissions(): Boolean {
         if (!isAvailable) {
@@ -173,6 +193,12 @@ class HealthConnectManager(
 
         records += readType(
             recordType = ExerciseSessionRecord::class,
+            startTime = startTime,
+            endTime = endTime,
+        )
+
+        records += readType(
+            recordType = NutritionRecord::class,
             startTime = startTime,
             endTime = endTime,
         )
