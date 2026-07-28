@@ -33,15 +33,7 @@ class HealthSyncService(
 
         val now = Instant.now()
 
-        /*
-         * Add a small overlap to avoid missing a record around the exact
-         * last-sync boundary. Backend idempotency handles duplicates.
-         */
-        val startTime = sessionStore
-            .getLastSuccessfulSync()
-            ?.let(Instant::ofEpochMilli)
-            ?.minus(Duration.ofMinutes(5))
-            ?: now.minus(Duration.ofDays(30))
+        val startTime = now.minus(Duration.ofDays(1))
 
         val records = healthConnectManager.readAll(
             startTime = startTime,

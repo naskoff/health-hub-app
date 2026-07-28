@@ -1,5 +1,6 @@
 package net.softavis.healthhub.health
 
+import android.util.Log
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
@@ -287,6 +288,31 @@ object HealthMetricMapper {
     private fun mapNutrition(
         record: NutritionRecord,
     ): List<HealthMetricPayload> {
+
+        Log.i(
+            "HealthHub",
+            """
+        NutritionRecord
+        id=${record.metadata.id}
+        lastModified=${record.metadata.lastModifiedTime}
+        package=${record.metadata.dataOrigin.packageName}
+
+        mealType=${record.mealType}
+        mealName=${record.name}
+
+        start=${record.startTime}
+        end=${record.endTime}
+
+        calories=${record.energy?.inKilocalories}
+        protein=${record.protein?.inGrams}
+        fat=${record.totalFat?.inGrams}
+        carbs=${record.totalCarbohydrate?.inGrams}
+        fiber=${record.dietaryFiber?.inGrams}
+        sugar=${record.sugar?.inGrams}
+        sodium=${record.sodium?.inMilligrams}
+        """.trimIndent(),
+        )
+
         val metrics = mutableListOf<HealthMetricPayload>()
 
         fun addMetric(
