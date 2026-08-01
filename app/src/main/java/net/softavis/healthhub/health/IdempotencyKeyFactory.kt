@@ -37,7 +37,7 @@ object IdempotencyKeyFactory {
              * Keep the source ID as useful entropy, but do not make it the
              * only identity component.
              */
-//            sourceRecordId.orEmpty(),
+            sourceRecordId.orEmpty(),
 
             startTime?.toString().orEmpty(),
             endTime?.toString().orEmpty(),
