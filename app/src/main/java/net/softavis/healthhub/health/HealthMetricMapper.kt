@@ -139,7 +139,7 @@ object HealthMetricMapper {
     ): HealthMetricPayload {
         return createPayload(
             record = record,
-            type = "active_calories_burned",
+            type = "active_calories",
             value = record.energy.inKilocalories,
             unit = "kcal",
             measuredAt = record.endTime,
@@ -153,7 +153,7 @@ object HealthMetricMapper {
     ): HealthMetricPayload {
         return createPayload(
             record = record,
-            type = "total_calories_burned",
+            type = "total_calories",
             value = record.energy.inKilocalories,
             unit = "kcal",
             measuredAt = record.endTime,

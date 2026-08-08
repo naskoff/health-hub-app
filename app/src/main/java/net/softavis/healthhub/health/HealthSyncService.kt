@@ -33,7 +33,7 @@ class HealthSyncService(
 
         val now = Instant.now()
 
-        val startTime = now.minus(Duration.ofDays(7))
+        val startTime = now.minus(Duration.ofDays(30))
 
         val records = healthConnectManager.readAll(
             startTime = startTime,
