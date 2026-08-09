@@ -3,6 +3,7 @@ package net.softavis.healthhub.sync
 import android.content.Context
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
+import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -21,6 +22,14 @@ class HealthSyncScheduler(
     fun syncNow() {
         val request =
             OneTimeWorkRequestBuilder<HealthSyncWorker>()
+                .setInputData(
+                    Data.Builder()
+                        .putBoolean(
+                            HealthSyncWorker.KEY_FULL_SYNC,
+                            true,
+                        )
+                        .build(),
+                )
                 .setConstraints(networkConstraints())
                 .setBackoffCriteria(
                     BackoffPolicy.EXPONENTIAL,

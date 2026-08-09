@@ -47,12 +47,18 @@ class HealthSyncWorker(
                 healthConnectManager = healthConnectManager,
             )
 
-            val result = syncService.sync()
+            val result = if (
+                inputData.getBoolean(KEY_FULL_SYNC, false)
+            ) {
+                syncService.sync()
+            } else {
+                syncService.syncChanges()
+            }
 
             Result.success(
                 workDataOf(
-                    KEY_RECORDS_READ to result.recordsRead,
-                    KEY_METRICS_SENT to result.metricsSent,
+                    KEY_INSERTED to result.inserted,
+                    KEY_DELETED to result.deleted,
                 ),
             )
         }.getOrElse { exception ->
@@ -93,10 +99,6 @@ class HealthSyncWorker(
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return
-        }
-
         val notificationManager =
             applicationContext.getSystemService(
                 NotificationManager::class.java,
@@ -115,9 +117,10 @@ class HealthSyncWorker(
     }
 
     companion object {
-        const val KEY_RECORDS_READ = "records_read"
-        const val KEY_METRICS_SENT = "metrics_sent"
+        const val KEY_INSERTED = "inserted"
+        const val KEY_DELETED = "deleted"
         const val KEY_ERROR = "error"
+        const val KEY_FULL_SYNC = "full_sync"
 
         private const val NOTIFICATION_CHANNEL_ID =
             "health_sync"

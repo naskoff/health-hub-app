@@ -53,11 +53,28 @@ class SessionStore(context: Context) {
         }
     }
 
+    fun getChangesToken(): String? {
+        return preferences.getString(KEY_CHANGES_TOKEN, null)
+    }
+
+    fun saveChangesToken(token: String) {
+        preferences.edit {
+            putString(KEY_CHANGES_TOKEN, token)
+        }
+    }
+
+    fun clearChangesToken() {
+        preferences.edit {
+            remove(KEY_CHANGES_TOKEN)
+        }
+    }
+
     companion object {
         private const val PREFERENCES_NAME = "health_hub_session"
 
         private const val KEY_API = "api"
         private const val KEY_AUTHORIZATION = "authorization"
         private const val KEY_LAST_SUCCESSFUL_SYNC = "last_successful_sync"
+        private const val KEY_CHANGES_TOKEN = "changes_token"
     }
 }

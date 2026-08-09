@@ -23,8 +23,34 @@ data class PairDeviceData(
 )
 
 data class HealthMetricsRequest(
-    val metrics: List<HealthMetricPayload>,
+    val data: List<HealthMetricOperation>,
 )
+
+data class HealthMetricsResponse(
+    val data: HealthMetricsResponseData,
+)
+
+data class HealthMetricsResponseData(
+    val inserted: Int,
+    val deleted: Int,
+)
+
+data class HealthMetricOperation(
+    val action: HealthMetricAction,
+
+    @SerializedName("source_id")
+    val sourceId: String,
+
+    val metrics: List<HealthMetricPayload>? = null,
+)
+
+enum class HealthMetricAction {
+    @SerializedName("insert")
+    Insert,
+
+    @SerializedName("delete")
+    Delete,
+}
 
 data class HealthMetricPayload(
     @SerializedName("idempotency_key")

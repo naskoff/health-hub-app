@@ -15,5 +15,5 @@ interface HealthHubApi {
     suspend fun sendMetrics(
         @Header("Authorization") authorization: String,
         @Body request: HealthMetricsRequest,
-    )
+    ): HealthMetricsResponse
 }

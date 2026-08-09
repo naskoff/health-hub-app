@@ -20,7 +20,9 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.response.ChangesResponse
 import androidx.health.connect.client.response.ReadRecordsResponse
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CancellationException
@@ -44,6 +46,24 @@ class HealthConnectManager(
     val client: HealthConnectClient by lazy {
         HealthConnectClient.getOrCreate(context)
     }
+
+    private val changesRecordTypes = setOf(
+        WeightRecord::class,
+        StepsRecord::class,
+        HeartRateRecord::class,
+        SleepSessionRecord::class,
+        ActiveCaloriesBurnedRecord::class,
+        TotalCaloriesBurnedRecord::class,
+        DistanceRecord::class,
+        HydrationRecord::class,
+        OxygenSaturationRecord::class,
+        BloodPressureRecord::class,
+        BodyFatRecord::class,
+        RespiratoryRateRecord::class,
+        RestingHeartRateRecord::class,
+        ExerciseSessionRecord::class,
+        NutritionRecord::class,
+    )
 
     /**
      * Health Connect record permissions currently supported by Health Hub.
@@ -105,6 +125,20 @@ class HealthConnectManager(
             client.permissionController.getGrantedPermissions()
 
         return grantedPermissions.containsAll(permissions)
+    }
+
+    suspend fun getChangesToken(): String {
+        return client.getChangesToken(
+            ChangesTokenRequest(
+                recordTypes = changesRecordTypes,
+            ),
+        )
+    }
+
+    suspend fun getChanges(
+        token: String,
+    ): ChangesResponse {
+        return client.getChanges(changesToken = token)
     }
 
     suspend fun readAll(

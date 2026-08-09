@@ -251,15 +251,15 @@ class HealthHubViewModel(
     private fun handleSuccessfulSync(
         workInfo: WorkInfo,
     ) {
-        val recordsRead =
+        val inserted =
             workInfo.outputData.getInt(
-                HealthSyncWorker.KEY_RECORDS_READ,
+                HealthSyncWorker.KEY_INSERTED,
                 0,
             )
 
-        val metricsSent =
+        val deleted =
             workInfo.outputData.getInt(
-                HealthSyncWorker.KEY_METRICS_SENT,
+                HealthSyncWorker.KEY_DELETED,
                 0,
             )
 
@@ -272,10 +272,10 @@ class HealthHubViewModel(
             lastSync = lastSync,
             message = buildString {
                 append("Sync completed. ")
-                append(recordsRead)
-                append(" records read, ")
-                append(metricsSent)
-                append(" metrics sent.")
+                append(inserted)
+                append(" inserted, ")
+                append(deleted)
+                append(" deleted.")
             },
             error = null,
         )
