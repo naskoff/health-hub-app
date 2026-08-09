@@ -3,7 +3,7 @@ package net.softavis.healthhub.sync
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -54,6 +54,11 @@ class HealthSyncWorker(
             } else {
                 syncService.syncChanges()
             }
+
+            Log.i(
+                TAG,
+                "Sync completed: inserted=${result.inserted}, deleted=${result.deleted}",
+            )
 
             Result.success(
                 workDataOf(
@@ -121,10 +126,8 @@ class HealthSyncWorker(
         const val KEY_DELETED = "deleted"
         const val KEY_ERROR = "error"
         const val KEY_FULL_SYNC = "full_sync"
-
-        private const val NOTIFICATION_CHANNEL_ID =
-            "health_sync"
-
+        private const val TAG = "HealthHubSync"
+        private const val NOTIFICATION_CHANNEL_ID = "health_sync"
         private const val NOTIFICATION_ID = 1001
         private const val MAX_RETRY_ATTEMPTS = 3
     }
