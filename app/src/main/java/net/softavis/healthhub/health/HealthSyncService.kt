@@ -15,8 +15,7 @@ import java.time.Duration
 import java.time.Instant
 
 data class SyncResult(
-    val inserted: Int,
-    val deleted: Int,
+    val metricsSent: Int,
 )
 
 class HealthSyncService(
@@ -34,7 +33,7 @@ class HealthSyncService(
         val session = requireSessionAndPermissions()
 
         val now = Instant.now()
-        val startTime = now.minus(Duration.ofDays(30))
+        val startTime = now.minus(Duration.ofDays(7))
 
         /*
          * When this is the first synchronization, obtain the Changes token
@@ -95,8 +94,7 @@ class HealthSyncService(
      * the corresponding operations have been accepted by the backend.
      */
     suspend fun syncChanges(): SyncResult {
-        var inserted = 0
-        var deleted = 0
+        var metricsSent = 0
 
         val session = requireSessionAndPermissions()
 
@@ -112,8 +110,7 @@ class HealthSyncService(
                 )
 
                 return SyncResult(
-                    inserted = 0,
-                    deleted = 0,
+                    metricsSent = 0,
                 )
             }
 
@@ -184,8 +181,7 @@ class HealthSyncService(
                 operations = operations,
             )
 
-            inserted += result.inserted
-            deleted += result.deleted
+            metricsSent += result.metricsSent
 
             /*
              * This page is fully committed to the backend, so its next token
@@ -200,8 +196,7 @@ class HealthSyncService(
         )
 
         return SyncResult(
-            inserted = inserted,
-            deleted = deleted,
+            metricsSent = metricsSent,
         )
     }
 
@@ -210,27 +205,26 @@ class HealthSyncService(
         authorization: String,
         operations: List<HealthMetricOperation>,
     ): SyncResult {
-        var inserted = 0
-        var deleted = 0
+        var metricsSent = 0
 
         chunkOperations(
             operations = operations,
             maxMetricsPerBatch = MAX_METRICS_PER_BATCH,
         ).forEach { batch ->
-            val response = api.sendMetrics(
+            api.sendMetrics(
                 authorization = authorization,
                 request = HealthMetricsRequest(
                     data = batch,
                 ),
             )
 
-            inserted += response.data.inserted
-            deleted += response.data.deleted
+            metricsSent += batch.sumOf { operation ->
+                operation.metrics?.size ?: 0
+            }
         }
 
         return SyncResult(
-            inserted = inserted,
-            deleted = deleted,
+            metricsSent = metricsSent,
         )
     }
 
@@ -280,6 +274,6 @@ class HealthSyncService(
 
     companion object {
         private const val TAG = "HealthHubSync"
-        private const val MAX_METRICS_PER_BATCH = 500
+        private const val MAX_METRICS_PER_BATCH = 100
     }
 }

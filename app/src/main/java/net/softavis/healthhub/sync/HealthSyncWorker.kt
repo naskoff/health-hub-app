@@ -3,7 +3,10 @@ package net.softavis.healthhub.sync
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -57,13 +60,12 @@ class HealthSyncWorker(
 
             Log.i(
                 TAG,
-                "Sync completed: inserted=${result.inserted}, deleted=${result.deleted}",
+                "Sync completed: metricsSent=${result.metricsSent}",
             )
 
             Result.success(
                 workDataOf(
-                    KEY_INSERTED to result.inserted,
-                    KEY_DELETED to result.deleted,
+                    KEY_METRICS_SENT to result.metricsSent,
                 ),
             )
         }.getOrElse { exception ->
@@ -82,6 +84,7 @@ class HealthSyncWorker(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun createForegroundInfo(): ForegroundInfo {
         createNotificationChannel()
 
@@ -100,6 +103,7 @@ class HealthSyncWorker(
         return ForegroundInfo(
             NOTIFICATION_ID,
             notification,
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         )
     }
 
@@ -122,8 +126,7 @@ class HealthSyncWorker(
     }
 
     companion object {
-        const val KEY_INSERTED = "inserted"
-        const val KEY_DELETED = "deleted"
+        const val KEY_METRICS_SENT = "metrics_sent"
         const val KEY_ERROR = "error"
         const val KEY_FULL_SYNC = "full_sync"
         private const val TAG = "HealthHubSync"

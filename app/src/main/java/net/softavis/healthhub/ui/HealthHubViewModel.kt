@@ -163,6 +163,10 @@ class HealthHubViewModel(
                     healthConnectManager.isAvailable,
                 permissionsGranted = granted,
             )
+
+            if (granted && sessionStore.getSession() != null) {
+                syncScheduler.schedulePeriodicSync()
+            }
         }
     }
 
@@ -251,15 +255,9 @@ class HealthHubViewModel(
     private fun handleSuccessfulSync(
         workInfo: WorkInfo,
     ) {
-        val inserted =
+        val metricsSent =
             workInfo.outputData.getInt(
-                HealthSyncWorker.KEY_INSERTED,
-                0,
-            )
-
-        val deleted =
-            workInfo.outputData.getInt(
-                HealthSyncWorker.KEY_DELETED,
+                HealthSyncWorker.KEY_METRICS_SENT,
                 0,
             )
 
@@ -270,13 +268,7 @@ class HealthHubViewModel(
         _uiState.value = _uiState.value.copy(
             syncing = false,
             lastSync = lastSync,
-            message = buildString {
-                append("Sync completed. ")
-                append(inserted)
-                append(" inserted, ")
-                append(deleted)
-                append(" deleted.")
-            },
+            message = "$metricsSent metrics sent successfully.",
             error = null,
         )
     }

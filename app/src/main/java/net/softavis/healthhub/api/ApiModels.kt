@@ -31,8 +31,7 @@ data class HealthMetricsResponse(
 )
 
 data class HealthMetricsResponseData(
-    val inserted: Int,
-    val deleted: Int,
+    val status: String,
 )
 
 data class HealthMetricOperation(
